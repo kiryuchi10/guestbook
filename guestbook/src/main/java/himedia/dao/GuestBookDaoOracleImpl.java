@@ -71,31 +71,26 @@ public class GuestBookDaoOracleImpl implements GuestbookDao {
 
     @Override
     public boolean add(BookListVo vo) {
-        Connection conn = null;
-        PreparedStatement pstmt = null;
-        int insertedCount = 0;
-
-        try {
-            conn = getConnection();
-            String sql = "INSERT INTO guestbook (no, name, password, content, reg_date) VALUES (seq_guestbook_pk.nextval, ?, ?, ?, SYSDATE)";
-            pstmt = conn.prepareStatement(sql);
+        int insertCount = 0;
+        String sql = """
+            INSERT INTO guestbook(no, name, password, content, reg_date)
+            VALUES(seq_guestbook_no.nextval, ?, ?, ?, sysdate)
+            """;
+        try (
+            Connection con = getConnection();
+            PreparedStatement pstmt = con.prepareStatement(sql);
+        ) {
             pstmt.setString(1, vo.getName());
             pstmt.setString(2, vo.getPassword());
             pstmt.setString(3, vo.getContent());
-            insertedCount = pstmt.executeUpdate();
+            insertCount = pstmt.executeUpdate();
+        } catch (SQLException e) {
+            System.err.println("연결 에러: " + e.getMessage());
         } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            try {
-                if (pstmt != null) pstmt.close();
-                if (conn != null) conn.close();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+            System.err.println("에러: " + e.getMessage());
         }
-        return insertedCount == 1;
+        return insertCount == 1;
     }
-
     @Override
     public boolean delete(Long no, String password) {
         Connection conn = null;

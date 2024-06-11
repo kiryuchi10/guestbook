@@ -34,7 +34,7 @@
         request.setCharacterEncoding("UTF-8"); // POST 요청 인코딩 설정
         String password = request.getParameter("password");
         out.println("입력한 비밀번호: " + password + "<br>");
-
+        out.println("no: " + no + "<br>");
         Connection conn = null;
         PreparedStatement pstmt = null;
         ResultSet rs = null;
@@ -53,12 +53,14 @@
             if(rs.next()) {
                 String dbPassword = rs.getString("password");
                 out.println("데이터베이스에 저장된 비밀번호: " + dbPassword + "<br>");
-                if ( dbPassword.equals(password)) {
+                if (dbPassword != null && dbPassword.equals(password)) {
                     sql = "DELETE FROM guestbook WHERE no=?";
                     pstmt = conn.prepareStatement(sql);
                     pstmt.setInt(1, Integer.parseInt(no));
                     pstmt.executeUpdate();
                     response.sendRedirect("index.jsp");
+                } else if (dbPassword == null) {
+                    out.println("비밀번호가 설정되지 않은 글입니다.");
                 } else {
                     out.println("비밀번호가 틀립니다.");
                 }
